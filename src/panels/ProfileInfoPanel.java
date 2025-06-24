@@ -2,6 +2,7 @@ package panels;
 
 import swing.UIUtils;
 import model.DatabaseManager;
+import model.FormData;
 import model.UserManager;
 import javax.swing.*;
 import java.awt.*;
@@ -30,10 +31,11 @@ public class ProfileInfoPanel extends JPanel {
 
     private String userName;
     private String userEmail;
-    private String userPhone = "+63 912 345 6789";
-    private String userAddress = "123 Main Street, Quezon City, Metro Manila";
+    private String userPhone = "";
+    private String userAddress = "";
     private String applicationStatus = "Pending";
     private String applicationId;
+    private String applicationDate = "";
 
     private JButton editButton, saveButton, deleteButton;
 
@@ -212,6 +214,15 @@ public class ProfileInfoPanel extends JPanel {
 
         if (isAdmin) {
             applicationStatus = (String) statusCombo.getSelectedItem();
+        }
+
+        // Save to UserManager (users.txt)
+        UserManager userManager = UserManager.getInstance();
+        UserManager.UserData userData = userManager.getUserByEmail(userEmail);
+        if (userData != null) {
+            userData.setPhone(userPhone);
+            userData.setAddress(userAddress);
+            userManager.saveUsers();
         }
 
         updateHeaderLabels();
@@ -398,7 +409,7 @@ public class ProfileInfoPanel extends JPanel {
                             "Your account has been successfully deleted.",
                             "Account Deleted",
                             JOptionPane.INFORMATION_MESSAGE);
-                    
+
                     // Get the top-level window (JFrame)
                     Window window = SwingUtilities.getWindowAncestor(this);
                     if (window instanceof JFrame) {
@@ -431,6 +442,21 @@ public class ProfileInfoPanel extends JPanel {
     }
 
     private void loadProfileData() {
+        // Load from UserManager (users.txt)
+        UserManager userManager = UserManager.getInstance();
+        UserManager.UserData userData = userManager.getUserByEmail(userEmail);
+        if (userData != null) {
+            if (userData.getPhone() != null) userPhone = userData.getPhone();
+            if (userData.getAddress() != null) userAddress = userData.getAddress();
+        }
+        // Application date still from database if available
+        try {
+            DatabaseManager dbManager = DatabaseManager.getInstance();
+            FormData data = dbManager.getFormDataByEmail(userEmail);
+            if (data != null && data.getAppDate() != null) applicationDate = data.getAppDate().toString();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         nameField.setText(userName);
         emailField.setText(userEmail);
         phoneField.setText(userPhone);
