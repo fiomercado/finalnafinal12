@@ -23,9 +23,6 @@ public class FillOutFormPanel extends JPanel {
     private JTextField middleNameField;
     private JTextField lastNameField;
     private JTextField suffixField;
-    private JTextField addressField;
-    private JComboBox<String> houseTypeField;
-    private JTextField incomeField;
     private JTextField appIDField; // Added for user input AppID
 
     // Student Information fields (for studentinformation table)
@@ -45,6 +42,7 @@ public class FillOutFormPanel extends JPanel {
     private JTextField schoolAddField;
     private JTextField schoolEmailField;
     private JComboBox<String> studSexField; // Added for student's sex
+    private JTextField studNameField;
 
     // Parent info fields (for parentguardianinfo table)
     private JTextField parentIDField; // Added for ParentID
@@ -64,7 +62,6 @@ public class FillOutFormPanel extends JPanel {
     private JTextField childFirstNameField;
     private JTextField childMiddleNameField;
     private JTextField childLastNameField;
-    private JTextField childSuffixField;
     private JTextField childBirthDateField;
     private JTextField childAgeField;
     private JComboBox<String> childSexField;
@@ -85,6 +82,9 @@ public class FillOutFormPanel extends JPanel {
 
     private String loginEmail;
 
+    // Restore houseTypeField declaration and initialization
+    private JComboBox<String> houseTypeField;
+
     public FillOutFormPanel(CardLayout cardLayout, JPanel mainPanel, String loginEmail, Consumer<FormData> onFormSubmit) {
         this.cardLayout = cardLayout;
         this.mainPanel = mainPanel;
@@ -101,8 +101,6 @@ public class FillOutFormPanel extends JPanel {
         middleNameField = UIUtils.createTextField(15);
         lastNameField = UIUtils.createTextField(15);
         suffixField = UIUtils.createTextField(10);
-        addressField = UIUtils.createTextField(25);
-        incomeField = UIUtils.createTextField(15);
         appIDField = UIUtils.createTextField(15);
         appIDField.setEditable(false); // App ID is generated, not user-editable
         appIDField.setText(generateUniqueID("EDU-")); // Prefill with a unique App ID
@@ -126,6 +124,7 @@ public class FillOutFormPanel extends JPanel {
         schoolNameField = UIUtils.createTextField(20);
         schoolAddField = UIUtils.createTextField(25);
         schoolEmailField = UIUtils.createTextField(20);
+        studNameField = UIUtils.createTextField(30);
 
         // Parent info fields
         parentIDField = UIUtils.createTextField(15);
@@ -147,7 +146,6 @@ public class FillOutFormPanel extends JPanel {
         childFirstNameField = UIUtils.createTextField(15);
         childMiddleNameField = UIUtils.createTextField(15);
         childLastNameField = UIUtils.createTextField(15);
-        childSuffixField = UIUtils.createTextField(10);
         childBirthDateField = UIUtils.createTextField(10);
         childAgeField = UIUtils.createTextField(8);
         childGradeYearLevelField = UIUtils.createTextField(10);
@@ -162,6 +160,8 @@ public class FillOutFormPanel extends JPanel {
 
         parentCivilStatusField = UIUtils.createComboBox(new String[]{"Single", "Married", "Divorced", "Widowed"});
         studCivilStatusField = UIUtils.createComboBox(new String[]{"Single", "Married", "Divorced", "Widowed"});
+
+        // In initializeComponents, restore houseTypeField initialization
         String[] houseTypeOptions = {"Owned", "Rented", "Shared"};
         houseTypeField = UIUtils.createComboBox(houseTypeOptions);
     }
@@ -238,7 +238,7 @@ public class FillOutFormPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
     }
-    
+
     private String generateUniqueID(String prefix) {
         // A simple way to generate a unique-enough ID for this context
         return prefix + (1000 + (int)(Math.random() * 9000));
@@ -255,8 +255,7 @@ public class FillOutFormPanel extends JPanel {
         gbc.weightx = 0.5;
 
         int row = 0;
-        
-        // Row 1 - First Name, Middle Name, Last Name
+        // Row 1 - Student Name
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("First Name:"), gbc);
         gbc.gridx = 1;
@@ -270,7 +269,6 @@ public class FillOutFormPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(lastNameField, gbc);
         row++;
-        
         // Row 2 - Suffix, Age, Birthdate
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("Suffix:"), gbc);
@@ -285,7 +283,6 @@ public class FillOutFormPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(studBirthdateField, gbc);
         row++;
-        
         // Row 3 - Civil Status, Religion, Sex
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("Civil Status:"), gbc);
@@ -300,7 +297,6 @@ public class FillOutFormPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(studSexField, gbc);
         row++;
-        
         // Row 4 - Email, Cell No, Citizenship
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("Email:"), gbc);
@@ -315,22 +311,12 @@ public class FillOutFormPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(studCitizenshipField, gbc);
         row++;
-        
-        // Row 5 - Address, Permanent Address, Income
+        // Row 5 - Permanent Address
         gbc.gridx = 0; gbc.gridy = row;
-        panel.add(new JLabel("Address:"), gbc);
-        gbc.gridx = 1;
-        panel.add(addressField, gbc);
-        gbc.gridx = 2;
         panel.add(new JLabel("Permanent Address:"), gbc);
-        gbc.gridx = 3;
+        gbc.gridx = 1;
         panel.add(studPermanentAddField, gbc);
-        gbc.gridx = 4;
-        panel.add(new JLabel("Income:"), gbc);
-        gbc.gridx = 5;
-        panel.add(incomeField, gbc);
         row++;
-        
         // Row 6 - House Type, Student ID, GWA
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("House Type:"), gbc);
@@ -345,7 +331,6 @@ public class FillOutFormPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(gwaField, gbc);
         row++;
-        
         // Row 7 - School ID, School Name, School Email
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("School ID:"), gbc);
@@ -360,7 +345,6 @@ public class FillOutFormPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(schoolEmailField, gbc);
         row++;
-        
         // Row 8 - School Address, Degree Program, App ID
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("School Address:"), gbc);
@@ -374,7 +358,6 @@ public class FillOutFormPanel extends JPanel {
         panel.add(new JLabel("App ID:"), gbc);
         gbc.gridx = 5;
         panel.add(appIDField, gbc);
-        
         return panel;
     }
 
@@ -451,6 +434,8 @@ public class FillOutFormPanel extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 0.5;
         int row = 0;
+
+        // Row 1 - First Name, Middle Name
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("First Name:"), gbc);
         gbc.gridx = 1;
@@ -459,24 +444,27 @@ public class FillOutFormPanel extends JPanel {
         panel.add(new JLabel("Middle Name:"), gbc);
         gbc.gridx = 3;
         panel.add(childMiddleNameField, gbc);
-        gbc.gridx = 4;
-        panel.add(new JLabel("Last Name:"), gbc);
-        gbc.gridx = 5;
-        panel.add(childLastNameField, gbc);
         row++;
+
+        // Row 2 - Last Name, Suffix
         gbc.gridx = 0; gbc.gridy = row;
-        panel.add(new JLabel("Suffix:"), gbc);
+        panel.add(new JLabel("Last Name:"), gbc);
         gbc.gridx = 1;
-        panel.add(childSuffixField, gbc);
+        panel.add(childLastNameField, gbc);
         gbc.gridx = 2;
         panel.add(new JLabel("Birth Date (YYYY-MM-DD):"), gbc);
         gbc.gridx = 3;
         panel.add(childBirthDateField, gbc);
-        gbc.gridx = 4;
+        row++;
+
+        // Row 3 - Birth Date, Age
+        gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("Age:"), gbc);
-        gbc.gridx = 5;
+        gbc.gridx = 1;
         panel.add(childAgeField, gbc);
         row++;
+
+        // Row 4 - Sex, Grade/Year Level
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("Sex:"), gbc);
         gbc.gridx = 1;
@@ -485,19 +473,25 @@ public class FillOutFormPanel extends JPanel {
         panel.add(new JLabel("Grade/Year Level:"), gbc);
         gbc.gridx = 3;
         panel.add(childGradeYearLevelField, gbc);
-        gbc.gridx = 4;
-        panel.add(new JLabel("Name of School:"), gbc);
-        gbc.gridx = 5;
-        panel.add(childNameOfSchoolField, gbc);
         row++;
+
+        // Row 5 - Name of School, Address of School
         gbc.gridx = 0; gbc.gridy = row;
-        panel.add(new JLabel("Address of School:"), gbc);
+        panel.add(new JLabel("Name of School:"), gbc);
         gbc.gridx = 1;
-        panel.add(childAddressOfSchoolField, gbc);
+        panel.add(childNameOfSchoolField, gbc);
         gbc.gridx = 2;
-        panel.add(new JLabel("School ID:"), gbc);
+        panel.add(new JLabel("Address of School:"), gbc);
         gbc.gridx = 3;
+        panel.add(childAddressOfSchoolField, gbc);
+        row++;
+
+        // Row 6 - School ID
+        gbc.gridx = 0; gbc.gridy = row;
+        panel.add(new JLabel("School ID:"), gbc);
+        gbc.gridx = 1;
         panel.add(chSchoolIDField, gbc);
+
         return panel;
     }
 
@@ -511,9 +505,6 @@ public class FillOutFormPanel extends JPanel {
             data.setMiddleName(middleNameField.getText().trim());
             data.setLastName(lastNameField.getText().trim());
             data.setSuffix(suffixField.getText().trim());
-            data.setAddress(addressField.getText().trim());
-            data.setHouseType((String) houseTypeField.getSelectedItem());
-            data.setIncome(incomeField.getText().trim());
             data.setAppID(appIDField.getText().trim());
 
             // Student Information (for studentinformation table)
@@ -649,9 +640,6 @@ public class FillOutFormPanel extends JPanel {
             String childLastName = childLastNameField.getText().trim();
             data.setChildLastName(childLastName.isEmpty() ? null : childLastName);
 
-            String childSuffix = childSuffixField.getText().trim();
-            data.setChildSuffix(childSuffix.isEmpty() ? null : childSuffix);
-
             String childBirthDateStr = childBirthDateField.getText().trim();
             if (!childBirthDateStr.isEmpty()) {
                 try {
@@ -713,6 +701,19 @@ public class FillOutFormPanel extends JPanel {
             String chSchoolID = chSchoolIDField.getText().trim();
             data.setChSchoolID(chSchoolID.isEmpty() ? null : chSchoolID);
 
+            // In collectFormData (before saving):
+            String fullName = firstNameField.getText().trim();
+            if (!middleNameField.getText().trim().isEmpty()) {
+                fullName += " " + middleNameField.getText().trim();
+            }
+            if (!lastNameField.getText().trim().isEmpty()) {
+                fullName += " " + lastNameField.getText().trim();
+            }
+            if (!suffixField.getText().trim().isEmpty()) {
+                fullName += " " + suffixField.getText().trim();
+            }
+            data.setStudName(fullName);
+
         } catch (ParseException e) {
             JOptionPane.showMessageDialog(this, "Invalid date format. Please use YYYY-MM-DD.", "Input Error", JOptionPane.ERROR_MESSAGE);
             return null;
@@ -733,13 +734,13 @@ public class FillOutFormPanel extends JPanel {
         String childId;
         int attempts = 0;
         final int maxAttempts = 100; // Prevent infinite loops
-        
+
         do {
             // Generate a random 4-digit number
             int randomNum = (int)(Math.random() * 10000);
             childId = String.format("C-%04d", randomNum);
             attempts++;
-            
+
             // Check if this ID already exists in the database
             if (attempts >= maxAttempts) {
                 // If we've tried too many times, use timestamp-based approach
@@ -748,10 +749,10 @@ public class FillOutFormPanel extends JPanel {
                 break;
             }
         } while (childIDExists(childId));
-        
+
         return childId;
     }
-    
+
     // Helper method to check if a child ID already exists
     private boolean childIDExists(String childId) {
         Connection conn = null;
@@ -787,23 +788,23 @@ public class FillOutFormPanel extends JPanel {
             conn.setAutoCommit(false); // Start transaction
             if (editMode && editingStudID != null) {
                 // UPDATE studentinformation
-                String sqlStudent = "UPDATE studentinformation SET StudAge=?, StudBirthdate=?, StudCitizenship=?, StudCivilStatus=?, StudReligion=?, StudPermanentAdd=?, StudCellNo=?, StudEmail=?, DegreeProgram=?, GWA=?, SchoolID=?, SchoolName=?, SchoolAdd=?, SchoolEmail=?, StudSex=? WHERE StudID=?";
+                String sqlStudent = "UPDATE studentinformation SET StudName=?, StudAge=?, StudBirthdate=?, StudCitizenship=?, StudCivilStatus=?, StudReligion=?, StudPermanentAdd=?, StudCellNo=?, StudEmail=?, DegreeProgram=?, GWA=?, SchoolID=?, SchoolName=?, SchoolAdd=?, SchoolEmail=? WHERE StudID=?";
                 pstmtStudent = conn.prepareStatement(sqlStudent);
-                pstmtStudent.setInt(1, data.getStudAge());
-                pstmtStudent.setDate(2, data.getStudBirthdate());
-                pstmtStudent.setString(3, data.getStudCitizenship());
-                pstmtStudent.setString(4, data.getStudCivilStatus());
-                pstmtStudent.setString(5, data.getStudReligion());
-                pstmtStudent.setString(6, data.getStudPermanentAdd());
-                pstmtStudent.setString(7, data.getStudCellNo());
-                pstmtStudent.setString(8, data.getStudEmail());
-                pstmtStudent.setString(9, data.getDegreeProgram());
-                pstmtStudent.setDouble(10, data.getGwa());
-                pstmtStudent.setString(11, data.getSchoolID());
-                pstmtStudent.setString(12, data.getSchoolName());
-                pstmtStudent.setString(13, data.getSchoolAdd());
-                pstmtStudent.setString(14, data.getSchoolEmail());
-                pstmtStudent.setString(15, data.getStudSex());
+                pstmtStudent.setString(1, data.getStudName());
+                pstmtStudent.setInt(2, data.getStudAge());
+                pstmtStudent.setDate(3, data.getStudBirthdate());
+                pstmtStudent.setString(4, data.getStudCitizenship());
+                pstmtStudent.setString(5, data.getStudCivilStatus());
+                pstmtStudent.setString(6, data.getStudReligion());
+                pstmtStudent.setString(7, data.getStudPermanentAdd());
+                pstmtStudent.setString(8, data.getStudCellNo());
+                pstmtStudent.setString(9, data.getStudEmail());
+                pstmtStudent.setString(10, data.getDegreeProgram());
+                pstmtStudent.setDouble(11, data.getGwa());
+                pstmtStudent.setString(12, data.getSchoolID());
+                pstmtStudent.setString(13, data.getSchoolName());
+                pstmtStudent.setString(14, data.getSchoolAdd());
+                pstmtStudent.setString(15, data.getSchoolEmail());
                 pstmtStudent.setString(16, editingStudID);
                 pstmtStudent.executeUpdate();
                 // UPDATE applicantinformation
@@ -873,23 +874,24 @@ public class FillOutFormPanel extends JPanel {
                 return;
             }
             // Insert into studentinformation first (since it contains the applicant's personal info)
-            String sqlStudent = "INSERT INTO studentinformation (StudID, StudAge, StudBirthdate, StudCitizenship, StudCivilStatus, StudReligion, StudPermanentAdd, StudCellNo, StudEmail, DegreeProgram, GWA, SchoolID, SchoolName, SchoolAdd, SchoolEmail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sqlStudent = "INSERT INTO studentinformation (StudID, StudName, StudAge, StudBirthdate, StudCitizenship, StudCivilStatus, StudReligion, StudPermanentAdd, StudCellNo, StudEmail, DegreeProgram, GWA, SchoolID, SchoolName, SchoolAdd, SchoolEmail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             pstmtStudent = conn.prepareStatement(sqlStudent);
             pstmtStudent.setString(1, data.getStudID());
-            pstmtStudent.setInt(2, data.getStudAge());
-            pstmtStudent.setDate(3, data.getStudBirthdate());
-            pstmtStudent.setString(4, data.getStudCitizenship());
-            pstmtStudent.setString(5, data.getStudCivilStatus());
-            pstmtStudent.setString(6, data.getStudReligion());
-            pstmtStudent.setString(7, data.getStudPermanentAdd());
-            pstmtStudent.setString(8, data.getStudCellNo());
-            pstmtStudent.setString(9, data.getStudEmail());
-            pstmtStudent.setString(10, data.getDegreeProgram());
-            pstmtStudent.setDouble(11, data.getGwa());
-            pstmtStudent.setString(12, data.getSchoolID());
-            pstmtStudent.setString(13, data.getSchoolName());
-            pstmtStudent.setString(14, data.getSchoolAdd());
-            pstmtStudent.setString(15, data.getSchoolEmail());
+            pstmtStudent.setString(2, data.getStudName());
+            pstmtStudent.setInt(3, data.getStudAge());
+            pstmtStudent.setDate(4, data.getStudBirthdate());
+            pstmtStudent.setString(5, data.getStudCitizenship());
+            pstmtStudent.setString(6, data.getStudCivilStatus());
+            pstmtStudent.setString(7, data.getStudReligion());
+            pstmtStudent.setString(8, data.getStudPermanentAdd());
+            pstmtStudent.setString(9, data.getStudCellNo());
+            pstmtStudent.setString(10, data.getStudEmail());
+            pstmtStudent.setString(11, data.getDegreeProgram());
+            pstmtStudent.setDouble(12, data.getGwa());
+            pstmtStudent.setString(13, data.getSchoolID());
+            pstmtStudent.setString(14, data.getSchoolName());
+            pstmtStudent.setString(15, data.getSchoolAdd());
+            pstmtStudent.setString(16, data.getSchoolEmail());
             pstmtStudent.executeUpdate();
 
             // Insert into applicantinformation (using the generated AppID)
@@ -979,9 +981,6 @@ public class FillOutFormPanel extends JPanel {
         if (data.getMiddleName() != null) middleNameField.setText(data.getMiddleName());
         if (data.getLastName() != null) lastNameField.setText(data.getLastName());
         if (data.getSuffix() != null) suffixField.setText(data.getSuffix());
-        if (data.getAddress() != null) addressField.setText(data.getAddress());
-        if (data.getHouseType() != null) houseTypeField.setSelectedItem(data.getHouseType());
-        if (data.getIncome() != null) incomeField.setText(data.getIncome());
         if (data.getAppID() != null) appIDField.setText(data.getAppID());
 
         // Student Information
@@ -1015,6 +1014,13 @@ public class FillOutFormPanel extends JPanel {
                     studSexField.setSelectedIndex(0);
                     break;
             }
+        }
+        if (data.getStudName() != null) {
+            String[] nameParts = data.getStudName().split(" ");
+            firstNameField.setText(nameParts.length > 0 ? nameParts[0] : "");
+            middleNameField.setText(nameParts.length > 2 ? nameParts[1] : "");
+            lastNameField.setText(nameParts.length > 2 ? nameParts[2] : (nameParts.length > 1 ? nameParts[1] : ""));
+            suffixField.setText(nameParts.length > 3 ? nameParts[3] : "");
         }
 
         // Parent Information
@@ -1050,7 +1056,6 @@ public class FillOutFormPanel extends JPanel {
         if (data.getChildFirstName() != null) childFirstNameField.setText(data.getChildFirstName());
         if (data.getChildMiddleName() != null) childMiddleNameField.setText(data.getChildMiddleName());
         if (data.getChildLastName() != null) childLastNameField.setText(data.getChildLastName());
-        if (data.getChildSuffix() != null) childSuffixField.setText(data.getChildSuffix());
         if (data.getChildDateOfBirth() != null) childBirthDateField.setText(dateFormat.format(data.getChildDateOfBirth()));
         if (data.getChildAge() != null) childAgeField.setText(data.getChildAge());
         if (data.getChildSex() != null) {
@@ -1082,17 +1087,17 @@ public class FillOutFormPanel extends JPanel {
         if (parentID == null || parentID.isEmpty()) {
             return parentID;
         }
-        
+
         // If it's already in the correct format (P-XXXX), return as is
         if (parentID.matches("P-\\d{4}")) {
             return parentID;
         }
-        
+
         // If it's in the old format (PXXXX), convert to new format
         if (parentID.matches("P\\d{4}")) {
             return parentID.substring(0, 1) + "-" + parentID.substring(1);
         }
-        
+
         // If it doesn't match either pattern, return as is
         return parentID;
     }
@@ -1106,9 +1111,6 @@ public class FillOutFormPanel extends JPanel {
         middleNameField.setText("");
         lastNameField.setText("");
         suffixField.setText("");
-        addressField.setText("");
-        houseTypeField.setSelectedIndex(0);
-        incomeField.setText("");
         appIDField.setText("");
 
         // Clear student information fields
@@ -1128,6 +1130,7 @@ public class FillOutFormPanel extends JPanel {
         schoolAddField.setText("");
         schoolEmailField.setText("");
         studSexField.setSelectedIndex(0);
+        studNameField.setText("");
 
         // Clear parent information fields
         parentIDField.setText("");
@@ -1147,7 +1150,6 @@ public class FillOutFormPanel extends JPanel {
         childFirstNameField.setText("");
         childMiddleNameField.setText("");
         childLastNameField.setText("");
-        childSuffixField.setText("");
         childBirthDateField.setText("");
         childAgeField.setText("");
         childSexField.setSelectedIndex(0);
@@ -1161,9 +1163,7 @@ public class FillOutFormPanel extends JPanel {
         // Basic validation for required fields
         if (firstNameField.getText().trim().isEmpty() ||
                 lastNameField.getText().trim().isEmpty() ||
-                addressField.getText().trim().isEmpty() ||
-                houseTypeField.getSelectedItem() == null ||
-                incomeField.getText().trim().isEmpty() ||
+                appIDField.getText().trim().isEmpty() ||
                 studAgeField.getText().trim().isEmpty() ||
                 studBirthdateField.getText().trim().isEmpty() ||
                 studCitizenshipField.getText().trim().isEmpty() ||
@@ -1224,9 +1224,6 @@ public class FillOutFormPanel extends JPanel {
                 Integer.parseInt(childAgeField.getText().trim());
             }
             // Validate income and monthly income fields
-            if (!incomeField.getText().trim().isEmpty()) {
-                Double.parseDouble(incomeField.getText().trim());
-            }
             if (!parentMonthlyIncomeField.getText().trim().isEmpty()) {
                 Double.parseDouble(parentMonthlyIncomeField.getText().trim());
             }
@@ -1238,15 +1235,15 @@ public class FillOutFormPanel extends JPanel {
 
         // Validate children info if any field is filled
         boolean hasChildInfo = !childFirstNameField.getText().trim().isEmpty() ||
-                              !childMiddleNameField.getText().trim().isEmpty() ||
-                              !childLastNameField.getText().trim().isEmpty() ||
-                              !childBirthDateField.getText().trim().isEmpty() ||
-                              !childAgeField.getText().trim().isEmpty() ||
-                              !childGradeYearLevelField.getText().trim().isEmpty() ||
-                              !childNameOfSchoolField.getText().trim().isEmpty() ||
-                              !childAddressOfSchoolField.getText().trim().isEmpty() ||
-                              !chSchoolIDField.getText().trim().isEmpty();
-        
+                !childMiddleNameField.getText().trim().isEmpty() ||
+                !childLastNameField.getText().trim().isEmpty() ||
+                !childBirthDateField.getText().trim().isEmpty() ||
+                !childAgeField.getText().trim().isEmpty() ||
+                !childGradeYearLevelField.getText().trim().isEmpty() ||
+                !childNameOfSchoolField.getText().trim().isEmpty() ||
+                !childAddressOfSchoolField.getText().trim().isEmpty() ||
+                !chSchoolIDField.getText().trim().isEmpty();
+
         if (hasChildInfo) {
             // If any child field is filled, validate required fields
             if (childFirstNameField.getText().trim().isEmpty()) {
@@ -1295,26 +1292,21 @@ public class FillOutFormPanel extends JPanel {
 
     private String buildChildFullName(FormData data) {
         StringBuilder fullName = new StringBuilder();
-        
+
         if (data.getChildFirstName() != null && !data.getChildFirstName().trim().isEmpty()) {
             fullName.append(data.getChildFirstName().trim());
         }
-        
+
         if (data.getChildMiddleName() != null && !data.getChildMiddleName().trim().isEmpty()) {
             if (fullName.length() > 0) fullName.append(" ");
             fullName.append(data.getChildMiddleName().trim());
         }
-        
+
         if (data.getChildLastName() != null && !data.getChildLastName().trim().isEmpty()) {
             if (fullName.length() > 0) fullName.append(" ");
             fullName.append(data.getChildLastName().trim());
         }
-        
-        if (data.getChildSuffix() != null && !data.getChildSuffix().trim().isEmpty() && !data.getChildSuffix().trim().equals("null")) {
-            if (fullName.length() > 0) fullName.append(" ");
-            fullName.append(data.getChildSuffix().trim());
-        }
-        
+
         return fullName.toString();
     }
 }
