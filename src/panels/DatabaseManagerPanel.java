@@ -33,7 +33,7 @@ public class DatabaseManagerPanel extends JPanel {
         initComponents();
         layoutComponents();
         loadTableNames();
-        
+
         // Add component listener to refresh data when panel becomes visible
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
@@ -118,10 +118,10 @@ public class DatabaseManagerPanel extends JPanel {
         });
         backButton.addActionListener(e -> {
             if (hasUnsavedChanges) {
-                int choice = JOptionPane.showConfirmDialog(this, 
-                    "You have unsaved changes. Do you want to save them before going back?", 
-                    "Unsaved Changes", 
-                    JOptionPane.YES_NO_CANCEL_OPTION);
+                int choice = JOptionPane.showConfirmDialog(this,
+                        "You have unsaved changes. Do you want to save them before going back?",
+                        "Unsaved Changes",
+                        JOptionPane.YES_NO_CANCEL_OPTION);
                 if (choice == JOptionPane.YES_OPTION) {
                     saveChanges();
                 } else if (choice == JOptionPane.CANCEL_OPTION) {
@@ -150,10 +150,10 @@ public class DatabaseManagerPanel extends JPanel {
 
         tableSelector.addActionListener(e -> {
             if (hasUnsavedChanges) {
-                int choice = JOptionPane.showConfirmDialog(this, 
-                    "You have unsaved changes. Do you want to save them before switching tables?", 
-                    "Unsaved Changes", 
-                    JOptionPane.YES_NO_CANCEL_OPTION);
+                int choice = JOptionPane.showConfirmDialog(this,
+                        "You have unsaved changes. Do you want to save them before switching tables?",
+                        "Unsaved Changes",
+                        JOptionPane.YES_NO_CANCEL_OPTION);
                 if (choice == JOptionPane.YES_OPTION) {
                     saveChanges();
                 } else if (choice == JOptionPane.CANCEL_OPTION) {
@@ -164,10 +164,10 @@ public class DatabaseManagerPanel extends JPanel {
         });
         refreshButton.addActionListener(e -> {
             if (hasUnsavedChanges) {
-                int choice = JOptionPane.showConfirmDialog(this, 
-                    "You have unsaved changes. Do you want to save them before refreshing?", 
-                    "Unsaved Changes", 
-                    JOptionPane.YES_NO_CANCEL_OPTION);
+                int choice = JOptionPane.showConfirmDialog(this,
+                        "You have unsaved changes. Do you want to save them before refreshing?",
+                        "Unsaved Changes",
+                        JOptionPane.YES_NO_CANCEL_OPTION);
                 if (choice == JOptionPane.YES_OPTION) {
                     saveChanges();
                 } else if (choice == JOptionPane.CANCEL_OPTION) {
@@ -236,13 +236,13 @@ public class DatabaseManagerPanel extends JPanel {
     private void loadTableData() {
         String tableName = (String) tableSelector.getSelectedItem();
         if (tableName == null) return;
-        
+
         // Dynamically retrieve the current userStudID from database
         String currentUserStudID = DatabaseManager.getInstance().getStudIDByEmail(userEmail);
-        
+
         System.out.println("[DEBUG] loadTableData() called for table: " + tableName);
         System.out.println("[DEBUG] userEmail: " + userEmail + ", currentUserStudID: " + currentUserStudID);
-        
+
         try {
             Connection conn = DatabaseManager.getInstance().getConnection();
             Statement stmt = conn.createStatement();
@@ -345,7 +345,7 @@ public class DatabaseManagerPanel extends JPanel {
             hasUnsavedChanges = false;
             statusLabel.setText("Saved " + updated + " changes to " + tableName);
             JOptionPane.showMessageDialog(this, "Changes saved successfully!", "Save Complete", JOptionPane.INFORMATION_MESSAGE);
-            
+
             // Refresh the data to show the updated state
             loadTableData();
         } catch (SQLException e) {
@@ -357,34 +357,34 @@ public class DatabaseManagerPanel extends JPanel {
     private void deleteSelectedRows() {
         String tableName = (String) tableSelector.getSelectedItem();
         if (tableName == null) return;
-        
+
         int[] selectedRows = table.getSelectedRows();
         if (selectedRows.length == 0) {
-            JOptionPane.showMessageDialog(this, 
-                "Please select rows to delete.", 
-                "No Selection", 
-                JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Please select rows to delete.",
+                    "No Selection",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         // Show confirmation dialog with more details
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Are you sure you want to delete " + selectedRows.length + " row(s) from table '" + tableName + "'?\n\n" +
-            "This action cannot be undone!", 
-            "Confirm Delete", 
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE);
-            
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to delete " + selectedRows.length + " row(s) from table '" + tableName + "'?\n\n" +
+                        "This action cannot be undone!",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
         if (confirm != JOptionPane.YES_OPTION) return;
 
         try {
             Connection conn = DatabaseManager.getInstance().getConnection();
             conn.setAutoCommit(false);
-            
+
             int deleted = 0;
             int failed = 0;
             StringBuilder errorMessages = new StringBuilder();
-            
+
             // First, let's try a simple test to see if we can delete at all
             try {
                 // Test if we can even execute a DELETE statement
@@ -393,36 +393,36 @@ public class DatabaseManagerPanel extends JPanel {
                 testStmt.executeQuery();
                 testStmt.close();
             } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, 
-                    "Cannot access table '" + tableName + "': " + e.getMessage(), 
-                    "Access Error", 
-                    JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "Cannot access table '" + tableName + "': " + e.getMessage(),
+                        "Access Error",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
+
             // Delete from highest index to lowest to avoid shifting issues
             for (int i = selectedRows.length - 1; i >= 0; i--) {
                 try {
                     int modelRow = table.convertRowIndexToModel(selectedRows[i]);
                     Object pkValue = tableModel.getValueAt(modelRow, 0);
-                    
+
                     if (pkValue == null) {
                         failed++;
                         errorMessages.append("Row ").append(modelRow + 1).append(": Primary key is null\n");
                         continue;
                     }
-                    
+
                     // Build the DELETE statement
                     String sql = "DELETE FROM " + tableName + " WHERE " + tableModel.getColumnName(0) + " = ?";
                     PreparedStatement pstmt = conn.prepareStatement(sql);
                     pstmt.setObject(1, pkValue);
-                    
+
                     // Log what we're trying to delete
                     System.out.println("Attempting to delete: " + sql + " with value: " + pkValue);
-                    
+
                     int result = pstmt.executeUpdate();
                     System.out.println("Delete result: " + result + " rows affected");
-                    
+
                     if (result > 0) {
                         deleted++;
                         tableModel.removeRow(modelRow);
@@ -433,13 +433,13 @@ public class DatabaseManagerPanel extends JPanel {
                         System.out.println("No rows affected for PK: " + pkValue);
                     }
                     pstmt.close();
-                    
+
                 } catch (SQLException e) {
                     failed++;
                     String errorMsg = e.getMessage();
                     errorMessages.append("Row ").append(selectedRows[i] + 1).append(": ").append(errorMsg).append("\n");
                     System.out.println("SQL Error deleting row: " + errorMsg);
-                    
+
                     // Check for specific constraint violations
                     if (errorMsg.contains("foreign key constraint")) {
                         errorMessages.append("  → This row is referenced by other tables\n");
@@ -448,49 +448,49 @@ public class DatabaseManagerPanel extends JPanel {
                     }
                 }
             }
-            
+
             if (deleted > 0) {
                 conn.commit();
                 statusLabel.setText("Successfully deleted " + deleted + " row(s) from " + tableName);
-                
+
                 if (failed > 0) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Deleted " + deleted + " row(s) successfully.\n" +
-                        "Failed to delete " + failed + " row(s).\n\n" +
-                        "Errors:\n" + errorMessages.toString(), 
-                        "Partial Delete Complete", 
-                        JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this,
+                            "Deleted " + deleted + " row(s) successfully.\n" +
+                                    "Failed to delete " + failed + " row(s).\n\n" +
+                                    "Errors:\n" + errorMessages.toString(),
+                            "Partial Delete Complete",
+                            JOptionPane.WARNING_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(this, 
-                        "Successfully deleted " + deleted + " row(s) from " + tableName, 
-                        "Delete Complete", 
-                        JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this,
+                            "Successfully deleted " + deleted + " row(s) from " + tableName,
+                            "Delete Complete",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
             } else {
                 conn.rollback();
                 statusLabel.setText("Failed to delete any rows from " + tableName);
-                JOptionPane.showMessageDialog(this, 
-                    "Failed to delete any rows.\n\n" +
-                    "Possible reasons:\n" +
-                    "• Foreign key constraints (rows referenced by other tables)\n" +
-                    "• Database permissions\n" +
-                    "• Primary key values don't exist\n\n" +
-                    "Errors:\n" + errorMessages.toString(), 
-                    "Delete Failed", 
-                    JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "Failed to delete any rows.\n\n" +
+                                "Possible reasons:\n" +
+                                "• Foreign key constraints (rows referenced by other tables)\n" +
+                                "• Database permissions\n" +
+                                "• Primary key values don't exist\n\n" +
+                                "Errors:\n" + errorMessages.toString(),
+                        "Delete Failed",
+                        JOptionPane.ERROR_MESSAGE);
             }
-            
+
         } catch (SQLException e) {
             statusLabel.setText("Error deleting rows: " + e.getMessage());
             System.out.println("Database error: " + e.getMessage());
-            JOptionPane.showMessageDialog(this, 
-                "Database error while deleting rows:\n" + e.getMessage() + "\n\n" +
-                "This might be due to:\n" +
-                "• Foreign key constraints\n" +
-                "• Database permissions\n" +
-                "• Network connectivity issues", 
-                "Delete Error", 
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Database error while deleting rows:\n" + e.getMessage() + "\n\n" +
+                            "This might be due to:\n" +
+                            "• Foreign key constraints\n" +
+                            "• Database permissions\n" +
+                            "• Network connectivity issues",
+                    "Delete Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
