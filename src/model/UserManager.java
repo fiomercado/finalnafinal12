@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import panels.ProfileInfoPanel;
 
 public class UserManager {
     private static final String USER_DATA_FILE = "users.txt";
@@ -27,18 +28,30 @@ public class UserManager {
         private String email;
         private String password;
         private String appId;
+        private String phone;
+        private String address;
 
         public UserData(String name, String email, String password, String appId) {
+            this(name, email, password, appId, "", "");
+        }
+
+        public UserData(String name, String email, String password, String appId, String phone, String address) {
             this.name = name;
             this.email = email;
             this.password = password;
             this.appId = appId;
+            this.phone = phone;
+            this.address = address;
         }
 
         public String getName() { return name; }
         public String getEmail() { return email; }
         public String getPassword() { return password; }
         public String getAppId() { return appId; }
+        public String getPhone() { return phone; }
+        public void setPhone(String phone) { this.phone = phone; }
+        public String getAddress() { return address; }
+        public void setAddress(String address) { this.address = address; }
     }
 
     public boolean registerUser(String name, String email, String password) {
@@ -84,7 +97,7 @@ public class UserManager {
         if (!users.containsKey(email)) {
             return false;
         }
-        
+
         users.remove(email);
         saveUsers();
         return true;
@@ -105,7 +118,15 @@ public class UserManager {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] parts = line.split("\\|");
-                if (parts.length == 4) {
+                if (parts.length == 6) {
+                    String name = parts[0];
+                    String email = parts[1];
+                    String password = parts[2];
+                    String appId = parts[3];
+                    String phone = parts[4];
+                    String address = parts[5];
+                    users.put(email, new UserData(name, email, password, appId, phone, address));
+                } else if (parts.length == 4) {
                     String name = parts[0];
                     String email = parts[1];
                     String password = parts[2];
@@ -123,10 +144,10 @@ public class UserManager {
         }
     }
 
-    private void saveUsers() {
+    public void saveUsers() {
         try (PrintWriter writer = new PrintWriter(new FileWriter(USER_DATA_FILE))) {
             for (UserData userData : users.values()) {
-                writer.println(userData.getName() + "|" + userData.getEmail() + "|" + userData.getPassword() + "|" + (userData.getAppId() != null ? userData.getAppId() : ""));
+                writer.println(userData.getName() + "|" + userData.getEmail() + "|" + userData.getPassword() + "|" + (userData.getAppId() != null ? userData.getAppId() : "") + "|" + (userData.getPhone() != null ? userData.getPhone() : "") + "|" + (userData.getAddress() != null ? userData.getAddress() : ""));
             }
         } catch (IOException e) {
             System.err.println("Error saving users: " + e.getMessage());
