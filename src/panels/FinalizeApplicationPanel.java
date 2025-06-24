@@ -18,17 +18,14 @@ import java.sql.ResultSet;
 
 public class FinalizeApplicationPanel extends JPanel {
 
-    // Personal Information fields (for applicantinformation table)
+    // Personal Information fields
     private JTextField firstNameField;
     private JTextField middleNameField;
     private JTextField lastNameField;
     private JTextField suffixField;
-    private JTextField addressField;
-    private JComboBox<String> houseTypeField;
-    private JTextField incomeField;
     private JTextField appIDField;
 
-    // Student Information fields (for studentinformation table)
+    // Student Information fields
     private JTextField studIDField;
     private JTextField studAgeField;
     private JTextField studBirthdateField;
@@ -46,7 +43,7 @@ public class FinalizeApplicationPanel extends JPanel {
     private JTextField schoolEmailField;
     private JComboBox<String> studSexField;
 
-    // Parent info fields (for parentguardianinfo table)
+    // Parent info fields
     private JTextField parentIDField;
     private JComboBox<String> parentTypeField;
     private JTextField parentNameField;
@@ -60,11 +57,10 @@ public class FinalizeApplicationPanel extends JPanel {
     private JTextField parentEmailField;
     private JTextField parentPermanentAddField;
 
-    // Child info fields (for childreninfo table)
+    // Child info fields
     private JTextField childFirstNameField;
     private JTextField childMiddleNameField;
     private JTextField childLastNameField;
-    private JTextField childSuffixField;
     private JTextField childBirthDateField;
     private JTextField childAgeField;
     private JComboBox<String> childSexField;
@@ -73,18 +69,11 @@ public class FinalizeApplicationPanel extends JPanel {
     private JTextField childAddressOfSchoolField;
     private JTextField chSchoolIDField;
 
-    // Navigation components
     private CardLayout cardLayout;
     private JPanel mainPanel;
-    private Consumer<FormData> onFormSubmit;
-
-    // Edit mode tracking
-    private boolean editMode = false;
-    private String editingStudID = null;
-    private String editingAppID = null;
-
     private String loginEmail;
     private FormData currentFormData;
+    private JComboBox<String> houseTypeField;
 
     public FinalizeApplicationPanel(CardLayout cardLayout, JPanel mainPanel, String userEmail) {
         this.cardLayout = cardLayout;
@@ -101,13 +90,12 @@ public class FinalizeApplicationPanel extends JPanel {
         middleNameField = UIUtils.createTextField(15);
         lastNameField = UIUtils.createTextField(15);
         suffixField = UIUtils.createTextField(10);
-        addressField = UIUtils.createTextField(25);
-        incomeField = UIUtils.createTextField(15);
         appIDField = UIUtils.createTextField(15);
         appIDField.setEditable(false);
 
         // Student Information fields
         studIDField = UIUtils.createTextField(15);
+        studIDField.setEditable(false);
         studAgeField = UIUtils.createTextField(8);
         studBirthdateField = UIUtils.createTextField(10);
         studCitizenshipField = UIUtils.createTextField(15);
@@ -145,7 +133,6 @@ public class FinalizeApplicationPanel extends JPanel {
         childFirstNameField = UIUtils.createTextField(15);
         childMiddleNameField = UIUtils.createTextField(15);
         childLastNameField = UIUtils.createTextField(15);
-        childSuffixField = UIUtils.createTextField(10);
         childBirthDateField = UIUtils.createTextField(10);
         childAgeField = UIUtils.createTextField(8);
         childGradeYearLevelField = UIUtils.createTextField(10);
@@ -208,6 +195,18 @@ public class FinalizeApplicationPanel extends JPanel {
             if (validateForm()) {
                 FormData updatedData = collectFormData();
                 saveFormDataToDatabase(updatedData);
+                // Refresh ProfileInfoPanel to show updated submission date
+                String userName = model.UserManager.getInstance().getUserByEmail(loginEmail) != null ? model.UserManager.getInstance().getUserByEmail(loginEmail).getName() : "";
+                String appId = updatedData != null ? updatedData.getAppID() : null;
+                // Remove old ProfileInfoPanel if it exists
+                for (Component comp : mainPanel.getComponents()) {
+                    if (comp instanceof ProfileInfoPanel) {
+                        mainPanel.remove(comp);
+                        break;
+                    }
+                }
+                ProfileInfoPanel profilePanel = new ProfileInfoPanel(cardLayout, mainPanel, userName, loginEmail, appId);
+                mainPanel.add(profilePanel, "Profile");
                 JOptionPane.showMessageDialog(this,
                         "Application updated successfully! Thank you for updating your scholarship application.",
                         "Success",
@@ -234,14 +233,12 @@ public class FinalizeApplicationPanel extends JPanel {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(UIUtils.BACKGROUND_COLOR);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 4, 2, 4); // Tighter spacing
+        gbc.insets = new Insets(2, 4, 2, 4);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 0.5;
-
         int row = 0;
-        
-        // Row 1 - First Name, Middle Name, Last Name
+        // Row 1 - Student Name
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("First Name:"), gbc);
         gbc.gridx = 1;
@@ -255,7 +252,6 @@ public class FinalizeApplicationPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(lastNameField, gbc);
         row++;
-        
         // Row 2 - Suffix, Age, Birthdate
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("Suffix:"), gbc);
@@ -270,7 +266,6 @@ public class FinalizeApplicationPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(studBirthdateField, gbc);
         row++;
-        
         // Row 3 - Civil Status, Religion, Sex
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("Civil Status:"), gbc);
@@ -285,7 +280,6 @@ public class FinalizeApplicationPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(studSexField, gbc);
         row++;
-        
         // Row 4 - Email, Cell No, Citizenship
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("Email:"), gbc);
@@ -300,22 +294,12 @@ public class FinalizeApplicationPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(studCitizenshipField, gbc);
         row++;
-        
-        // Row 5 - Address, Permanent Address, Income
+        // Row 5 - Permanent Address
         gbc.gridx = 0; gbc.gridy = row;
-        panel.add(new JLabel("Address:"), gbc);
-        gbc.gridx = 1;
-        panel.add(addressField, gbc);
-        gbc.gridx = 2;
         panel.add(new JLabel("Permanent Address:"), gbc);
-        gbc.gridx = 3;
+        gbc.gridx = 1;
         panel.add(studPermanentAddField, gbc);
-        gbc.gridx = 4;
-        panel.add(new JLabel("Income:"), gbc);
-        gbc.gridx = 5;
-        panel.add(incomeField, gbc);
         row++;
-        
         // Row 6 - House Type, Student ID, GWA
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("House Type:"), gbc);
@@ -330,7 +314,6 @@ public class FinalizeApplicationPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(gwaField, gbc);
         row++;
-        
         // Row 7 - School ID, School Name, School Email
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("School ID:"), gbc);
@@ -345,7 +328,6 @@ public class FinalizeApplicationPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(schoolEmailField, gbc);
         row++;
-        
         // Row 8 - School Address, Degree Program, App ID
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("School Address:"), gbc);
@@ -356,14 +338,12 @@ public class FinalizeApplicationPanel extends JPanel {
         gbc.gridx = 3;
         panel.add(degreeProgramField, gbc);
         gbc.gridx = 4;
-        panel.add(new JLabel("App ID (EDU-XXXX):"), gbc);
+        panel.add(new JLabel("App ID:"), gbc);
         gbc.gridx = 5;
         panel.add(appIDField, gbc);
-        
         return panel;
     }
 
-    // Make parent and child panels more compact
     private JPanel createParentPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(UIUtils.BACKGROUND_COLOR);
@@ -436,6 +416,7 @@ public class FinalizeApplicationPanel extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 0.5;
         int row = 0;
+        // Row 1 - First Name, Middle Name, Last Name
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("First Name:"), gbc);
         gbc.gridx = 1;
@@ -449,19 +430,17 @@ public class FinalizeApplicationPanel extends JPanel {
         gbc.gridx = 5;
         panel.add(childLastNameField, gbc);
         row++;
+        // Row 2 - Birthdate, Age
         gbc.gridx = 0; gbc.gridy = row;
-        panel.add(new JLabel("Suffix:"), gbc);
+        panel.add(new JLabel("Birthdate (YYYY-MM-DD):"), gbc);
         gbc.gridx = 1;
-        panel.add(childSuffixField, gbc);
-        gbc.gridx = 2;
-        panel.add(new JLabel("Birth Date (YYYY-MM-DD):"), gbc);
-        gbc.gridx = 3;
         panel.add(childBirthDateField, gbc);
-        gbc.gridx = 4;
+        gbc.gridx = 2;
         panel.add(new JLabel("Age:"), gbc);
-        gbc.gridx = 5;
+        gbc.gridx = 3;
         panel.add(childAgeField, gbc);
         row++;
+        // Row 3 - Sex, Grade/Year Level, Name of School
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JLabel("Sex:"), gbc);
         gbc.gridx = 1;
@@ -471,16 +450,17 @@ public class FinalizeApplicationPanel extends JPanel {
         gbc.gridx = 3;
         panel.add(childGradeYearLevelField, gbc);
         gbc.gridx = 4;
-        panel.add(new JLabel("School Name:"), gbc);
+        panel.add(new JLabel("Name of School:"), gbc);
         gbc.gridx = 5;
         panel.add(childNameOfSchoolField, gbc);
         row++;
+        // Row 4 - Address of School, School ID
         gbc.gridx = 0; gbc.gridy = row;
-        panel.add(new JLabel("School Address:"), gbc);
+        panel.add(new JLabel("Address of School:"), gbc);
         gbc.gridx = 1;
         panel.add(childAddressOfSchoolField, gbc);
         gbc.gridx = 2;
-        panel.add(new JLabel("Child School ID:"), gbc);
+        panel.add(new JLabel("School ID:"), gbc);
         gbc.gridx = 3;
         panel.add(chSchoolIDField, gbc);
         return panel;
@@ -499,9 +479,8 @@ public class FinalizeApplicationPanel extends JPanel {
         middleNameField.setText(data.getMiddleName() != null ? data.getMiddleName() : "");
         lastNameField.setText(data.getLastName() != null ? data.getLastName() : "");
         suffixField.setText(data.getSuffix() != null ? data.getSuffix() : "");
-        addressField.setText(data.getAddress() != null ? data.getAddress() : "");
-        incomeField.setText(data.getIncome() != null ? data.getIncome() : "");
         appIDField.setText(data.getAppID() != null ? data.getAppID() : "");
+        houseTypeField.setSelectedItem(data.getHouseType() != null ? data.getHouseType() : "");
 
         // Student Information
         studIDField.setText(data.getStudID() != null ? data.getStudID() : "");
@@ -521,169 +500,137 @@ public class FinalizeApplicationPanel extends JPanel {
         schoolNameField.setText(data.getSchoolName() != null ? data.getSchoolName() : "");
         schoolAddField.setText(data.getSchoolAdd() != null ? data.getSchoolAdd() : "");
         schoolEmailField.setText(data.getSchoolEmail() != null ? data.getSchoolEmail() : "");
-
-        // Set combo box values
-        if (data.getHouseType() != null) {
-            houseTypeField.setSelectedItem(data.getHouseType());
-        }
-        if (data.getStudCivilStatus() != null) {
-            studCivilStatusField.setSelectedItem(convertCivilStatusToDisplay(data.getStudCivilStatus()));
-        }
-        if (data.getStudSex() != null) {
-            studSexField.setSelectedItem(convertSexToDisplay(data.getStudSex()));
-        }
+        studCivilStatusField.setSelectedItem(convertCivilStatusToDisplay(data.getStudCivilStatus()));
+        studSexField.setSelectedItem(convertSexToDisplay(data.getStudSex()));
 
         // Parent Information
         parentIDField.setText(data.getParentID() != null ? data.getParentID() : "");
-        if (data.getParentType() != null) {
-            parentTypeField.setSelectedItem(convertParentTypeToDisplay(data.getParentType()));
-        }
         parentNameField.setText(data.getParentName() != null ? data.getParentName() : "");
         if (data.getParentBirthdate() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             parentBirthdateField.setText(sdf.format(data.getParentBirthdate()));
         }
         parentCitizenshipField.setText(data.getParentCitizenship() != null ? data.getParentCitizenship() : "");
-        if (data.getParentCivilStatus() != null) {
-            parentCivilStatusField.setSelectedItem(convertCivilStatusToDisplay(data.getParentCivilStatus()));
-        }
         parentOccupationField.setText(data.getParentOccupation() != null ? data.getParentOccupation() : "");
         parentMonthlyIncomeField.setText(data.getParentMonthlyIncome() != null ? data.getParentMonthlyIncome() : "");
         parentEducationalAttainmentField.setText(data.getParentEducationalAttainment() != null ? data.getParentEducationalAttainment() : "");
         parentCellNoField.setText(data.getParentCellNo() != null ? data.getParentCellNo() : "");
         parentEmailField.setText(data.getParentEmail() != null ? data.getParentEmail() : "");
         parentPermanentAddField.setText(data.getParentPermanentAdd() != null ? data.getParentPermanentAdd() : "");
+        parentTypeField.setSelectedItem(convertParentTypeToDisplay(data.getParentType()));
+        parentCivilStatusField.setSelectedItem(convertCivilStatusToDisplay(data.getParentCivilStatus()));
 
         // Child Information
         childFirstNameField.setText(data.getChildFirstName() != null ? data.getChildFirstName() : "");
         childMiddleNameField.setText(data.getChildMiddleName() != null ? data.getChildMiddleName() : "");
         childLastNameField.setText(data.getChildLastName() != null ? data.getChildLastName() : "");
-        childSuffixField.setText(data.getChildSuffix() != null ? data.getChildSuffix() : "");
-        if (data.getChildDateOfBirth() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            childBirthDateField.setText(sdf.format(data.getChildDateOfBirth()));
-        }
+        childBirthDateField.setText(data.getChildDateOfBirth() != null ? data.getChildDateOfBirth().toString() : "");
         childAgeField.setText(data.getChildAge() != null ? data.getChildAge() : "");
-        if (data.getChildSex() != null) {
-            childSexField.setSelectedItem(convertSexToDisplay(data.getChildSex()));
-        }
         childGradeYearLevelField.setText(data.getChildGradeYearLevel() != null ? data.getChildGradeYearLevel() : "");
         childNameOfSchoolField.setText(data.getChildNameOfSchool() != null ? data.getChildNameOfSchool() : "");
         childAddressOfSchoolField.setText(data.getChildAddressOfSchool() != null ? data.getChildAddressOfSchool() : "");
         chSchoolIDField.setText(data.getChSchoolID() != null ? data.getChSchoolID() : "");
+        childSexField.setSelectedItem(convertSexToDisplay(data.getChildSex()));
+
+        if (data.getStudName() != null) {
+            String[] nameParts = data.getStudName().split(" ");
+            firstNameField.setText(nameParts.length > 0 ? nameParts[0] : "");
+            middleNameField.setText(nameParts.length > 2 ? nameParts[1] : "");
+            lastNameField.setText(nameParts.length > 2 ? nameParts[2] : (nameParts.length > 1 ? nameParts[1] : ""));
+            suffixField.setText(nameParts.length > 3 ? nameParts[3] : "");
+        }
     }
 
     public FormData collectFormData() {
-        FormData data = new FormData();
-        
-        // Personal Information
-        data.setFirstName(firstNameField.getText());
-        data.setMiddleName(middleNameField.getText());
-        data.setLastName(lastNameField.getText());
-        data.setSuffix(suffixField.getText());
-        data.setAddress(addressField.getText());
-        data.setHouseType((String) houseTypeField.getSelectedItem());
-        data.setIncome(incomeField.getText());
-        data.setAppID(appIDField.getText());
+        FormData data = this.currentFormData;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        // Student Information
-        data.setStudID(studIDField.getText());
         try {
-            data.setStudAge(Integer.parseInt(studAgeField.getText()));
+            // Personal Information
+            data.setFirstName(firstNameField.getText().trim());
+            data.setMiddleName(middleNameField.getText().trim());
+            data.setLastName(lastNameField.getText().trim());
+            data.setSuffix(suffixField.getText().trim());
+            data.setHouseType((String) houseTypeField.getSelectedItem());
+
+            // Student Information
+            data.setStudAge(Integer.parseInt(studAgeField.getText().trim()));
+            data.setStudBirthdate(new java.sql.Date(dateFormat.parse(studBirthdateField.getText().trim()).getTime()));
+            data.setStudCitizenship(studCitizenshipField.getText().trim());
+            data.setStudCivilStatus(convertCivilStatusToDB((String) studCivilStatusField.getSelectedItem()));
+            data.setStudReligion(studReligionField.getText().trim());
+            data.setStudPermanentAdd(studPermanentAddField.getText().trim());
+            data.setStudCellNo(studCellNoField.getText().trim());
+            data.setDegreeProgram(degreeProgramField.getText().trim());
+            data.setGwa(Double.parseDouble(gwaField.getText().trim()));
+            data.setSchoolID(schoolIDField.getText().trim());
+            data.setSchoolName(schoolNameField.getText().trim());
+            data.setSchoolAdd(schoolAddField.getText().trim());
+            data.setSchoolEmail(schoolEmailField.getText().trim());
+            data.setStudSex(convertSexToDB((String) studSexField.getSelectedItem()));
+
+            // Parent Information
+            data.setParentType(convertParentTypeToDB((String) parentTypeField.getSelectedItem()));
+            data.setParentName(parentNameField.getText().trim());
+            String parentBirthdateStr = parentBirthdateField.getText().trim();
+            if (!parentBirthdateStr.isEmpty()) {
+                data.setParentBirthdate(new java.sql.Date(dateFormat.parse(parentBirthdateStr).getTime()));
+            }
+            data.setParentCitizenship(parentCitizenshipField.getText().trim());
+            data.setParentCivilStatus(convertCivilStatusToDB((String) parentCivilStatusField.getSelectedItem()));
+            data.setParentOccupation(parentOccupationField.getText().trim());
+            data.setParentMonthlyIncome(parentMonthlyIncomeField.getText().trim());
+            data.setParentEducationalAttainment(parentEducationalAttainmentField.getText().trim());
+            data.setParentCellNo(parentCellNoField.getText().trim());
+            data.setParentEmail(parentEmailField.getText().trim());
+            data.setParentPermanentAdd(parentPermanentAddField.getText().trim());
+
+            // Child Information
+            data.setChildFirstName(childFirstNameField.getText().trim());
+            data.setChildMiddleName(childMiddleNameField.getText().trim());
+            data.setChildLastName(childLastNameField.getText().trim());
+            String childBirthdateStr = childBirthDateField.getText().trim();
+            if (!childBirthdateStr.isEmpty()) {
+                data.setChildDateOfBirth(new java.sql.Date(dateFormat.parse(childBirthdateStr).getTime()));
+            }
+            data.setChildAge(childAgeField.getText().trim());
+            data.setChildSex(convertSexToDB((String) childSexField.getSelectedItem()));
+            data.setChildGradeYearLevel(childGradeYearLevelField.getText().trim());
+            data.setChildNameOfSchool(childNameOfSchoolField.getText().trim());
+            data.setChildAddressOfSchool(childAddressOfSchoolField.getText().trim());
+            data.setChSchoolID(chSchoolIDField.getText().trim());
+
+            String fullName = firstNameField.getText().trim();
+            if (!middleNameField.getText().trim().isEmpty()) {
+                fullName += " " + middleNameField.getText().trim();
+            }
+            if (!lastNameField.getText().trim().isEmpty()) {
+                fullName += " " + lastNameField.getText().trim();
+            }
+            if (!suffixField.getText().trim().isEmpty()) {
+                fullName += " " + suffixField.getText().trim();
+            }
+            data.setStudName(fullName);
+
+        } catch (ParseException e) {
+            JOptionPane.showMessageDialog(this, "Invalid date format. Please use YYYY-MM-DD.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            return null;
         } catch (NumberFormatException e) {
-            data.setStudAge(0);
+            JOptionPane.showMessageDialog(this, "Invalid number format for Age or GWA.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            return null;
         }
-        
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            data.setStudBirthdate(new java.sql.Date(sdf.parse(studBirthdateField.getText()).getTime()));
-        } catch (ParseException e) {
-            data.setStudBirthdate(null);
-        }
-        
-        data.setStudCitizenship(studCitizenshipField.getText());
-        data.setStudCivilStatus(convertCivilStatusToDB((String) studCivilStatusField.getSelectedItem()));
-        data.setStudReligion(studReligionField.getText());
-        data.setStudPermanentAdd(studPermanentAddField.getText());
-        data.setStudCellNo(studCellNoField.getText());
-        data.setStudEmail(studEmailField.getText());
-        data.setDegreeProgram(degreeProgramField.getText());
-        
-        try {
-            data.setGwa(Double.parseDouble(gwaField.getText()));
-        } catch (NumberFormatException e) {
-            data.setGwa(0.0);
-        }
-        
-        data.setSchoolID(schoolIDField.getText());
-        data.setSchoolName(schoolNameField.getText());
-        data.setSchoolAdd(schoolAddField.getText());
-        data.setSchoolEmail(schoolEmailField.getText());
-        data.setStudSex(convertSexToDB((String) studSexField.getSelectedItem()));
-
-        // Parent Information
-        data.setParentID(parentIDField.getText());
-        data.setParentType(convertParentTypeToDB((String) parentTypeField.getSelectedItem()));
-        data.setParentName(parentNameField.getText());
-        
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            data.setParentBirthdate(new java.sql.Date(sdf.parse(parentBirthdateField.getText()).getTime()));
-        } catch (ParseException e) {
-            data.setParentBirthdate(null);
-        }
-        
-        data.setParentCitizenship(parentCitizenshipField.getText());
-        data.setParentCivilStatus(convertCivilStatusToDB((String) parentCivilStatusField.getSelectedItem()));
-        data.setParentOccupation(parentOccupationField.getText());
-        data.setParentMonthlyIncome(parentMonthlyIncomeField.getText());
-        data.setParentEducationalAttainment(parentEducationalAttainmentField.getText());
-        data.setParentCellNo(parentCellNoField.getText());
-        data.setParentEmail(parentEmailField.getText());
-        data.setParentPermanentAdd(parentPermanentAddField.getText());
-
-        // Child Information
-        data.setChildFirstName(childFirstNameField.getText());
-        data.setChildMiddleName(childMiddleNameField.getText());
-        data.setChildLastName(childLastNameField.getText());
-        data.setChildSuffix(childSuffixField.getText());
-        
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            data.setChildDateOfBirth(new java.sql.Date(sdf.parse(childBirthDateField.getText()).getTime()));
-        } catch (ParseException e) {
-            data.setChildDateOfBirth(null);
-        }
-        
-        data.setChildAge(childAgeField.getText());
-        data.setChildSex(convertSexToDB((String) childSexField.getSelectedItem()));
-        data.setChildGradeYearLevel(childGradeYearLevelField.getText());
-        data.setChildNameOfSchool(childNameOfSchoolField.getText());
-        data.setChildAddressOfSchool(childAddressOfSchoolField.getText());
-        data.setChSchoolID(chSchoolIDField.getText());
-
         return data;
     }
 
     public void saveFormDataToDatabase(FormData data) {
-        // This method will be implemented to save the updated data to the database
-        // For now, we'll use the same logic as FillOutFormPanel
-        panels.FillOutFormPanel tempPanel = new panels.FillOutFormPanel(cardLayout, mainPanel, loginEmail, null);
-        tempPanel.saveFormDataToDatabase(data);
+        // Use the save method from FillOutFormPanel as it handles both insert and update
+        FillOutFormPanel tempForm = new FillOutFormPanel(null, null, loginEmail, null);
+        tempForm.prefillForm(data); // prefill to set edit mode and IDs
+        tempForm.saveFormDataToDatabase(data);
     }
 
     public boolean validateForm() {
-        // Basic validation - you can add more specific validation rules
-        if (firstNameField.getText().trim().isEmpty() || lastNameField.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "First Name and Last Name are required.", "Validation Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        
-        if (studEmailField.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Email is required.", "Validation Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        
+        // Add validation logic here
         return true;
     }
 
@@ -705,7 +652,7 @@ public class FinalizeApplicationPanel extends JPanel {
             case "Married": return "M";
             case "Divorced": return "D";
             case "Widowed": return "W";
-            default: return displayValue;
+            default: return "O";
         }
     }
 
@@ -714,24 +661,22 @@ public class FinalizeApplicationPanel extends JPanel {
         switch (displayValue) {
             case "Male": return "M";
             case "Female": return "F";
-            case "Other": return "O";
-            default: return displayValue;
+            default: return "O";
         }
     }
 
-    // Helper methods for converting database values to display values
     private String convertParentTypeToDisplay(String dbValue) {
-        if (dbValue == null) return "Not specified";
+        if (dbValue == null) return null;
         switch (dbValue) {
             case "F": return "Father";
             case "M": return "Mother";
             case "G": return "Guardian";
-            default: return "Unknown";
+            default: return dbValue;
         }
     }
 
     private String convertCivilStatusToDisplay(String dbValue) {
-        if (dbValue == null) return "Not specified";
+        if (dbValue == null) return null;
         switch (dbValue) {
             case "S": return "Single";
             case "M": return "Married";
@@ -742,12 +687,11 @@ public class FinalizeApplicationPanel extends JPanel {
     }
 
     private String convertSexToDisplay(String dbValue) {
-        if (dbValue == null) return "Not specified";
+        if (dbValue == null) return null;
         switch (dbValue) {
             case "M": return "Male";
             case "F": return "Female";
-            case "O": return "Other";
-            default: return "Not specified";
+            default: return "Other";
         }
     }
-} 
+}
