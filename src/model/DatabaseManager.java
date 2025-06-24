@@ -31,10 +31,10 @@ public class DatabaseManager {
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 // Create new connection
                 connection = DriverManager.getConnection(DB_URL, USER, PASS);
-                
+
                 // Set auto-commit to false for transaction control
                 connection.setAutoCommit(false);
-                
+
                 System.out.println("Connected to MySQL database: " + DB_URL);
                 System.out.println("Auto-commit disabled for transaction control");
             }
@@ -154,7 +154,7 @@ public class DatabaseManager {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     data = new FormData();
-                    
+
                     // Student Information
                     data.setStudID(rs.getString("StudID"));
                     data.setStudAge(rs.getInt("StudAge"));
@@ -172,9 +172,11 @@ public class DatabaseManager {
                     data.setSchoolAdd(rs.getString("SchoolAdd"));
                     data.setSchoolEmail(rs.getString("SchoolEmail"));
                     data.setStudSex(rs.getString("StudSex"));
+                    data.setStudName(rs.getString("StudName"));
 
                     // Application Information
                     data.setAppID(rs.getString("AppID"));
+                    data.setAppDate(rs.getDate("AppDate"));
 
                     // Parent Information
                     data.setParentID(rs.getString("ParentID"));
@@ -375,4 +377,4 @@ public class DatabaseManager {
         }
         return false;
     }
-} 
+}
