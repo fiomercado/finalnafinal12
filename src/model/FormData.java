@@ -3,6 +3,7 @@ package model;
 public class FormData {
     private String studID; // Matches StudID in studentinformation
     private String appID; // Application ID in format EDU-XXXX
+    private java.sql.Date appDate; // Application date
 
     // Applicant Information fields (specific to applicantinformation table)
     private String firstName;
@@ -29,6 +30,7 @@ public class FormData {
     private String schoolAdd;
     private String schoolEmail;
     private String studSex; // Added for student's sex
+    private String studName;
 
     // Parent Information
     private String parentID; // Added for ParentID
@@ -65,6 +67,9 @@ public class FormData {
 
     public String getAppID() { return appID; }
     public void setAppID(String appID) { this.appID = appID; }
+
+    public java.sql.Date getAppDate() { return appDate; }
+    public void setAppDate(java.sql.Date appDate) { this.appDate = appDate; }
 
     public int getStudAge() { return studAge; }
     public void setStudAge(int studAge) { this.studAge = studAge; }
@@ -110,6 +115,9 @@ public class FormData {
 
     public String getStudSex() { return studSex; }
     public void setStudSex(String studSex) { this.studSex = studSex; }
+
+    public String getStudName() { return studName; }
+    public void setStudName(String studName) { this.studName = studName; }
 
     // Applicant Information Getters and Setters
     public String getFirstName() { return firstName; }
@@ -209,6 +217,7 @@ public class FormData {
         return "FormData{" +
                 "studID='" + studID + '\'' +
                 ", appID='" + appID + '\'' +
+                ", appDate=" + appDate +
                 ", firstName='" + firstName + '\'' +
                 ", middleName='" + middleName + '\'' +
                 ", lastName='" + lastName + '\'' +
